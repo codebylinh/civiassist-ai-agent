@@ -42,7 +42,7 @@ A browser-based interface for all features, deployable to [Railway](https://rail
 
 ## Why it saves money
 
-An unresolved RFI sitting in someone's inbox isn't just a paperwork problem. A delayed response on a $2M commercial build can stall a crew of 20 for a day — that's $8,000-15,000 in idle labor and equipment time. Do that 3 times on a project and you've burned $25,000-45,000 before a change order is even written.
+An unresolved RFI sitting in someone's inbox isn't just a paperwork problem. A delayed response on a $2M commercial build can stall a crew of 20 for a day, that's $8,000-15,000 in idle labor and equipment time. 
 
 This agent cuts the time-to-response on common construction queries from days to minutes:
 
@@ -50,8 +50,6 @@ This agent cuts the time-to-response on common construction queries from days to
 - **Complaint routing**: a noise complaint that would take 2 phone calls and a site visit to resolve gets classified, routed, and drafted in under 30 seconds
 - **Auto-resolve**: ~40% of incoming queries match known resolutions in the knowledge base and never need human review
 - **Audit trail**: every decision is logged, so you spend less time reconstructing what happened when a dispute lands on your desk
-
-For a firm handling 5-10 active projects, that adds up to **10-20 hours of staff time saved per week** — or $25,000-60,000 per year at typical billing rates.
 
 ---
 
@@ -299,21 +297,6 @@ GROQ_API_KEY=gsk_your_key_here
 # Optional: switch to a larger model
 AGENT_MODEL=llama-3.3-70b-versatile
 ```
-
----
-
-## Tech stack
-
-| Component | Technology |
-|---|---|
-| LLM | Meta Llama 3.1 via [Groq](https://console.groq.com) (free tier) |
-| LLM client | `groq` Python SDK |
-| Web framework | [FastAPI](https://fastapi.tiangolo.com) + Jinja2 |
-| Frontend | Tailwind CSS (CDN) |
-| Memory storage | SQLite (7 databases) + FTS5 full-text search |
-| Terminal UI | [Rich](https://github.com/Textualize/rich) |
-| Deployment | [Railway](https://railway.app) |
-| Environment | Python 3.11+ |
 
 ---
 
