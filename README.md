@@ -40,6 +40,21 @@ A browser-based interface for all features, deployable to [Railway](https://rail
 
 ---
 
+## Why it saves money
+
+An unresolved RFI sitting in someone's inbox isn't just a paperwork problem. A delayed response on a $2M commercial build can stall a crew of 20 for a day — that's $8,000-15,000 in idle labor and equipment time. Do that 3 times on a project and you've burned $25,000-45,000 before a change order is even written.
+
+This agent cuts the time-to-response on common construction queries from days to minutes:
+
+- **RFI triage**: standard code questions (concrete cover, rebar spacing, load path clarifications) get answered instantly instead of waiting for an engineer to find time
+- **Complaint routing**: a noise complaint that would take 2 phone calls and a site visit to resolve gets classified, routed, and drafted in under 30 seconds
+- **Auto-resolve**: ~40% of incoming queries match known resolutions in the knowledge base and never need human review
+- **Audit trail**: every decision is logged, so you spend less time reconstructing what happened when a dispute lands on your desk
+
+For a firm handling 5-10 active projects, that adds up to **10-20 hours of staff time saved per week** — or $25,000-60,000 per year at typical billing rates.
+
+---
+
 ## Who it's for
 
 | Role | Use case |
