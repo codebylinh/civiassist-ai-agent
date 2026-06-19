@@ -23,10 +23,15 @@ from tools.file_tools import (
 from tools.construction_tools import (
     CONSTRUCTION_TOOL_DEFINITIONS, dispatch_construction_tool
 )
+from tools.community_tools import (
+    COMMUNITY_TOOL_DEFINITIONS, dispatch_community_tool
+)
 import pipeline.projects as proj
+import pipeline.community as community_db
 
-ALL_TOOLS = TOOL_DEFINITIONS + CONSTRUCTION_TOOL_DEFINITIONS
+ALL_TOOLS = TOOL_DEFINITIONS + CONSTRUCTION_TOOL_DEFINITIONS + COMMUNITY_TOOL_DEFINITIONS
 _CONSTRUCTION_TOOL_NAMES = {t["function"]["name"] for t in CONSTRUCTION_TOOL_DEFINITIONS}
+_COMMUNITY_TOOL_NAMES    = {t["function"]["name"] for t in COMMUNITY_TOOL_DEFINITIONS}
 
 
 class Agent:
@@ -48,6 +53,7 @@ class Agent:
         self.session_id = self.episodic.new_session()
         self.client     = ollama.Client(host=config.OLLAMA_HOST)
         proj.init_db()
+        community_db.init_db()
 
         self._run_background_cycles()
 
@@ -135,6 +141,9 @@ class Agent:
 
         if tool_name in _CONSTRUCTION_TOOL_NAMES:
             return dispatch_construction_tool(tool_name, tool_input)
+
+        if tool_name in _COMMUNITY_TOOL_NAMES:
+            return dispatch_community_tool(tool_name, tool_input)
 
         return f"[Unknown tool: {tool_name}]"
 

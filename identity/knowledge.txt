@@ -1,3 +1,51 @@
+## Community Safety and Resident Relations
+
+### Noise Ordinances
+Most jurisdictions restrict construction noise to weekdays 7AM–6PM and Saturdays 8AM–5PM.
+Night work (after 9PM) typically requires a special permit. Exceeding permitted hours is a
+code violation — residents have the right to contact the city inspector. Typical decibel limits
+near residential areas: 75 dBA at the property line during daytime.
+
+### Dust Control Requirements
+Active construction must implement dust control: water suppression on exposed soil, covering
+stockpiles, wheel wash stations at site exits, street sweeping of mud/debris. Failure to
+control dust affecting neighboring properties can trigger complaints to the local air quality
+management district (AQMD) and may result in fines or stop-work orders.
+
+### Excavation Near Occupied Buildings
+Excavation within 50 ft of an occupied structure requires a preconstruction survey (photos,
+crack mapping). Vibration monitoring may be required. If new cracks appear in neighboring
+structures during excavation, work must stop and a structural engineer must assess whether
+the damage is construction-related. This is a legal and insurance matter.
+
+### Traffic Management and Road Closures
+Any lane or road closure requires advance notice to the public (typically 48–72 hours for
+planned closures, immediate notification for emergencies). A Traffic Management Plan (TMP)
+approved by the local authority is required. Failure to provide notice or proper signage
+is a liability risk and ordinance violation.
+
+### Sidewalk and Pedestrian Access
+Construction must maintain safe pedestrian passage at all times, or provide an equivalent
+alternate route with proper signage. Closing a sidewalk without a safe detour violates ADA
+requirements and pedestrian safety ordinances. A pedestrian protection plan is required for
+overhead work near public walkways (scaffolding, netting, covered walkways).
+
+### How to Handle an Emergency Complaint
+1. Do not dismiss or minimize — treat every emergency complaint as real until proven otherwise
+2. If life safety is at risk: call 911 first, then notify the site superintendent
+3. Stop work in the affected area immediately
+4. Document: photos, time, who was notified, what action was taken
+5. Notify the project manager and owner within 1 hour
+6. File an incident report within 24 hours
+7. Do not resume work in the affected area without sign-off from the project engineer
+
+### Proactive Community Communication Best Practices
+- Notify residents at least 48 hours before any unusually noisy, dusty, or disruptive work
+- Post a site notice board with: project name, contractor, 24-hour contact number, expected completion
+- Respond to every complaint within 24 hours (high/emergency: within 1 hour)
+- After resolving a complaint, follow up with the resident to confirm the issue is fixed
+- Monthly community updates for long-duration projects (>3 months)
+
 ## Construction Project Phases
 Typical phases: Pre-Design → Schematic Design → Design Development → Construction Documents → Permitting → Bidding/Procurement → Construction (Mobilization → Foundations → Structure → MEP Rough-in → Envelope → Finishes → Commissioning) → Closeout → Warranty Period.
 
