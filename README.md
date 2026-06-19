@@ -1,6 +1,6 @@
 # civil-agent
 
-An autonomous AI assistant for **civil engineers, construction managers, urban planners, and their clients** — running entirely locally on a free Meta Llama model via [Ollama](https://ollama.com). No API keys. No cloud costs.
+An autonomous AI assistant for **civil engineers, construction managers, urban planners, and their clients**. Runs on a free [Groq](https://console.groq.com) API with Meta Llama. No GPU required. No cloud costs.
 
 
 ---
@@ -12,11 +12,11 @@ An autonomous AI assistant for **civil engineers, construction managers, urban p
 A conversational agent that remembers everything across sessions and tracks your active projects.
 
 - Answers technical questions referencing ACI 318, AISC, AASHTO, OSHA, IBC, and local codes
-- Tracks **projects, RFIs, submittals, and site issues** — all persisted to local SQLite
+- Tracks **projects, RFIs, submittals, and site issues**, all persisted to local SQLite
 - Switches register automatically: technical language for engineers, plain English for clients
-- Builds a self-model over time — priorities, patterns, and project history accumulate across conversations
+- Builds a self-model over time: priorities, patterns, and project history accumulate across conversations
 - Flags safety concerns immediately and without softening
-- Never guesses on structural calculations — states clearly when licensed review is required
+- Never guesses on structural calculations; states clearly when licensed review is required
 
 ### 2. Support Triage Pipeline (`run_triage.py`)
 
@@ -24,7 +24,7 @@ A production-grade ticket classifier and response drafter for incoming queries f
 
 - **Classifies** tickets across 10 construction categories with priority, sentiment, and routing
 - **Searches** a knowledge base for known resolutions before generating a response
-- **Drafts** context-aware replies — escalating tone for urgent issues, plain English for clients
+- **Drafts** context-aware replies: escalating tone for urgent issues, plain English for clients
 - **Auto-resolves** high-confidence standard queries; escalates safety issues with stop-work language
 - Full audit trail for every triage decision
 
@@ -119,10 +119,10 @@ Download from [ollama.com/download](https://ollama.com/download) and install. Ol
 ### 2. Pull a Meta Llama model
 
 ```bash
-# Fast (3B, ~2GB) — good for most queries
+# Fast (3B, ~2GB) - good for most queries
 ollama pull llama3.2
 
-# Better quality (8B, ~5GB) — recommended for technical work
+# Better quality (8B, ~5GB) - recommended for technical work
 ollama pull llama3.1:8b
 ```
 
@@ -155,7 +155,7 @@ Start the agent and talk to it like a senior technical advisor:
 ```
 You: Create a project called Riverside Bridge Replacement, client City of Greenwood, target 2026-03-15
 
-You: Log a critical site issue on Riverside Bridge — groundwater encountered at 6ft during pier excavation,
+You: Log a critical site issue on Riverside Bridge: groundwater encountered at 6ft during pier excavation,
      expected at 12ft per geotech report
 
 You: Create an RFI for Riverside Bridge: footing reinforcement spacing conflict between structural S-3
