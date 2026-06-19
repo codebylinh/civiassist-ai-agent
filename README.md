@@ -2,7 +2,6 @@
 
 An autonomous AI assistant for **civil engineers, construction managers, urban planners, and their clients** — running entirely locally on a free Meta Llama model via [Ollama](https://ollama.com). No API keys. No cloud costs.
 
-Built on the [LIA persistent-agency architecture](https://github.com/silberfunke-72/From-Prompts-to-Persistent-Agency-An-Architecture-for-Intrinsic-Ethics): behavior and expertise emerge from accumulated memory and identity continuity, not hardcoded rules.
 
 ---
 
@@ -239,12 +238,6 @@ No API keys required.
 | Environment | Python 3.11+ |
 
 Everything runs locally. No data leaves your machine.
-
----
-
-## Inspired by
-
-[From Prompts to Persistent Agency: An Architecture for Intrinsic Ethics](https://github.com/silberfunke-72/From-Prompts-to-Persistent-Agency-An-Architecture-for-Intrinsic-Ethics) by Carsten Hammerich — the original LIA architecture demonstrating that stable, autonomous behavior emerges from persistent memory and identity continuity rather than hardcoded behavioral constraints.
 
 ---
 
