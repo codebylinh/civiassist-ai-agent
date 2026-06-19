@@ -28,6 +28,16 @@ A production-grade ticket classifier and response drafter for incoming queries f
 - **Auto-resolves** high-confidence standard queries; escalates safety issues with stop-work language
 - Full audit trail for every triage decision
 
+### 3. Web App (`web/app.py`)
+
+A browser-based interface for all features, deployable to [Railway](https://railway.app) in minutes.
+
+- Dashboard with live safety alerts, active projects, and open complaints
+- AI chat interface with persistent memory across sessions
+- Community complaints intake with severity triage and dual-audience response drafting
+- Project and RFI tracker
+- Engineering query triage queue
+
 ---
 
 ## Who it's for
@@ -38,6 +48,7 @@ A production-grade ticket classifier and response drafter for incoming queries f
 | **Construction Manager** | Project phase tracking, change order advice, schedule issues |
 | **Urban Planner** | Zoning variance guidance, environmental review, permit process |
 | **Client / Owner** | Plain-English project status updates, timeline and cost impact summaries |
+| **Resident** | File safety complaints about nearby construction; get routed responses |
 
 ---
 
@@ -48,12 +59,14 @@ civil-agent/
 │
 ├── main.py                   ← Autonomous agent CLI (Rich terminal UI)
 ├── run_triage.py             ← Support triage pipeline CLI
-├── config.py                 ← Ollama host, model, all paths
+├── run_community.py          ← Community complaints CLI
+├── config.py                 ← Groq API key, model, all paths
 │
 ├── core/
-│   ├── agent.py              ← Orchestrator: memory + tools + Ollama loop
+│   ├── llm.py                ← Unified Groq LLM interface (complete + tool calling)
+│   ├── agent.py              ← Orchestrator: memory + tools + Groq loop
 │   ├── kernel.py             ← LCRK: event-driven state updates per message
-│   ├── identity.py           ← Loads identity files → builds system prompt
+│   ├── identity.py           ← Loads identity files, builds system prompt
 │   ├── inner_state.py        ← Persistent working thread (focus, loops, tasks)
 │   ├── priority_memory.py    ← PMS: 50 active insights across 5 categories
 │   ├── reflection.py         ← LLM-driven daily/weekly distillation cycles
@@ -71,11 +84,18 @@ civil-agent/
 │   ├── drafter.py            ← Response drafter with KB lookup + tone routing
 │   ├── workflow.py           ← Full triage pipeline orchestrator
 │   ├── ticket_store.py       ← SQLite: tickets, classifications, responses, KB
-│   └── projects.py           ← Project/RFI/submittal/site-issue tracker
+│   ├── projects.py           ← Project/RFI/submittal/site-issue tracker
+│   ├── community.py          ← SQLite: complaints, alerts, notifications
+│   └── community_workflow.py ← Complaint classifier + resident/site response drafter
 │
 ├── tools/
 │   ├── file_tools.py         ← Sandboxed read/write tools (notes, journal, KB)
-│   └── construction_tools.py ← 9 project management tools for the agent
+│   ├── construction_tools.py ← 9 project management tools for the agent
+│   └── community_tools.py    ← 8 community safety tools for the agent
+│
+├── web/
+│   ├── app.py                ← FastAPI app with all routes
+│   └── templates/            ← Tailwind CSS pages (dashboard, chat, complaints, projects, triage)
 │
 └── identity/
     ├── AGENT.txt             ← Core expertise and values (edit to customize)
@@ -94,7 +114,7 @@ User message
   → kernel.py          event-driven state update (focus, open loops, tasks)
   → semantic.py        search relevant memories to inject into context
   → identity.py        build system prompt: identity + rules + memories + state
-  → agent.py           call Ollama → execute tools in loop → final response
+  → agent.py           call Groq API, execute tools in loop, final response
   → episodic.py        store the turn
   → inner_state.json   persisted to disk
   → (every 15 turns)   red thread narrative updated
@@ -112,18 +132,16 @@ Active turns (episodic) → Session summary → Daily reflection
 
 ## Quick start
 
-### 1. Install Ollama
+### 1. Get a free Groq API key
 
-Download from [ollama.com/download](https://ollama.com/download) and install. Ollama runs as a background service.
+Sign up at [console.groq.com](https://console.groq.com), create an API key, and copy it.
 
-### 2. Pull a Meta Llama model
+### 2. Configure
 
 ```bash
-# Fast (3B, ~2GB) - good for most queries
-ollama pull llama3.2
-
-# Better quality (8B, ~5GB) - recommended for technical work
-ollama pull llama3.1:8b
+cp .env.example .env
+# Edit .env and set your key:
+# GROQ_API_KEY=gsk_...
 ```
 
 ### 3. Install Python dependencies
@@ -137,14 +155,32 @@ Requires Python 3.11+. No other system dependencies.
 ### 4. Run
 
 ```bash
-# Autonomous agent
+# Autonomous agent (terminal UI)
 python main.py
 
 # Support triage pipeline
 python run_triage.py seed          # load demo construction tickets
 python run_triage.py process-all   # classify + draft all pending tickets
 python run_triage.py queue         # view the ticket queue
+
+# Community complaints
+python run_community.py seed       # load demo resident complaints
+python run_community.py process-all
+python run_community.py complaints
+
+# Web app (local)
+uvicorn web.app:app --reload
+# then open http://localhost:8000
 ```
+
+---
+
+## Deploy to Railway (free)
+
+1. Push this repo to GitHub
+2. Go to [railway.app](https://railway.app), create a new project from your GitHub repo
+3. Add one environment variable: `GROQ_API_KEY=gsk_...`
+4. Railway builds and deploys automatically; you get a public URL
 
 ---
 
@@ -216,14 +252,13 @@ Safety issues are always routed to `escalate` with a stop-work recommendation in
 
 ## Configuration
 
-Create a `.env` file in the project root to override defaults:
-
 ```env
-OLLAMA_HOST=http://localhost:11434
-AGENT_MODEL=llama3.1:8b
-```
+# .env
+GROQ_API_KEY=gsk_your_key_here
 
-No API keys required.
+# Optional: switch to a larger model
+AGENT_MODEL=llama-3.3-70b-versatile
+```
 
 ---
 
@@ -231,13 +266,14 @@ No API keys required.
 
 | Component | Technology |
 |---|---|
-| LLM engine | Meta Llama 3.2 / 3.1 via [Ollama](https://ollama.com) |
-| LLM client | `ollama` Python library |
+| LLM | Meta Llama 3.1 via [Groq](https://console.groq.com) (free tier) |
+| LLM client | `groq` Python SDK |
+| Web framework | [FastAPI](https://fastapi.tiangolo.com) + Jinja2 |
+| Frontend | Tailwind CSS (CDN) |
 | Memory storage | SQLite (7 databases) + FTS5 full-text search |
 | Terminal UI | [Rich](https://github.com/Textualize/rich) |
+| Deployment | [Railway](https://railway.app) |
 | Environment | Python 3.11+ |
-
-Everything runs locally. No data leaves your machine.
 
 ---
 
