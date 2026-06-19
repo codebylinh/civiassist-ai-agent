@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}civil-agent{% endblock %}</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .sidebar-link { @apply flex items-center gap-3 px-4 py-2.5 rounded-lg text-slate-300 hover:bg-slate-700 hover:text-white transition-colors; }
+    .sidebar-link.active { @apply bg-slate-700 text-white; }
+    .badge-emergency { @apply bg-red-100 text-red-800 text-xs font-semibold px-2 py-0.5 rounded; }
+    .badge-high      { @apply bg-orange-100 text-orange-800 text-xs font-semibold px-2 py-0.5 rounded; }
+    .badge-medium    { @apply bg-yellow-100 text-yellow-800 text-xs font-semibold px-2 py-0.5 rounded; }
+    .badge-low       { @apply bg-green-100 text-green-800 text-xs font-semibold px-2 py-0.5 rounded; }
+    .badge-open      { @apply bg-yellow-100 text-yellow-800 text-xs font-semibold px-2 py-0.5 rounded; }
+    .badge-resolved  { @apply bg-green-100 text-green-800 text-xs font-semibold px-2 py-0.5 rounded; }
+    .badge-pending   { @apply bg-slate-100 text-slate-700 text-xs font-semibold px-2 py-0.5 rounded; }
+  </style>
+</head>
+<body class="bg-slate-100 min-h-screen flex">
+
+  <!-- Sidebar -->
+  <aside class="w-64 bg-slate-800 min-h-screen flex flex-col fixed left-0 top-0 bottom-0">
+    <div class="px-6 py-5 border-b border-slate-700">
+      <div class="text-white font-bold text-lg">civil-agent</div>
+      <div class="text-slate-400 text-xs mt-0.5">Construction · Planning · Safety</div>
+    </div>
+    <nav class="flex-1 p-3 space-y-1 mt-2">
+      <a href="/"           class="sidebar-link {% if request.url.path == '/' %}active{% endif %}">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+        Dashboard
+      </a>
+      <a href="/chat"       class="sidebar-link {% if request.url.path == '/chat' %}active{% endif %}">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
+        AI Agent Chat
+      </a>
+      <a href="/complaints" class="sidebar-link {% if request.url.path == '/complaints' %}active{% endif %}">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+        Community Complaints
+      </a>
+      <a href="/projects"   class="sidebar-link {% if request.url.path == '/projects' %}active{% endif %}">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+        Projects & RFIs
+      </a>
+      <a href="/triage"     class="sidebar-link {% if request.url.path == '/triage' %}active{% endif %}">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+        Query Triage
+      </a>
+    </nav>
+    <div class="p-4 border-t border-slate-700">
+      <div class="text-slate-500 text-xs">Powered by Llama 3 · Groq</div>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="ml-64 flex-1 p-8">
+    {% block content %}{% endblock %}
+  </main>
+
+</body>
+</html>

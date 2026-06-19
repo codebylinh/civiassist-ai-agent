@@ -1,0 +1,171 @@
+{% extends "base.html" %}
+{% block title %}Community Complaints — civil-agent{% endblock %}
+{% block content %}
+
+<div class="flex items-center justify-between mb-6">
+  <h1 class="text-2xl font-bold text-slate-800">Community Complaints</h1>
+  <button onclick="document.getElementById('newModal').classList.remove('hidden')"
+    class="bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-red-700">
+    + File Complaint
+  </button>
+</div>
+
+<!-- Alerts banner -->
+{% if alerts %}
+<div class="mb-6 bg-red-50 border border-red-200 rounded-xl p-4">
+  <div class="font-semibold text-red-700 mb-2">⚠ {{ alerts|length }} Active Safety Alert{{ 's' if alerts|length > 1 }}</div>
+  {% for a in alerts %}
+  <div class="text-sm text-red-600">{{ a.severity.upper() }}: {{ a.description[:120] }}</div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<!-- Complaints table -->
+<div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+  <table class="w-full text-sm">
+    <thead class="bg-slate-50 border-b border-slate-200">
+      <tr>
+        <th class="px-4 py-3 text-left text-slate-500 font-medium w-12">#</th>
+        <th class="px-4 py-3 text-left text-slate-500 font-medium">Severity</th>
+        <th class="px-4 py-3 text-left text-slate-500 font-medium">Category</th>
+        <th class="px-4 py-3 text-left text-slate-500 font-medium">Description</th>
+        <th class="px-4 py-3 text-left text-slate-500 font-medium">Location</th>
+        <th class="px-4 py-3 text-left text-slate-500 font-medium">Status</th>
+        <th class="px-4 py-3 text-left text-slate-500 font-medium">Filed</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-slate-100">
+      {% for c in complaints %}
+      <tr class="hover:bg-slate-50 cursor-pointer" onclick="viewComplaint({{ c.id }})">
+        <td class="px-4 py-3 text-slate-400">{{ c.id }}</td>
+        <td class="px-4 py-3">
+          {% if c.severity %}
+          <span class="badge-{{ c.severity }}">{{ c.severity.upper() }}</span>
+          {% else %}<span class="text-slate-300 text-xs">—</span>{% endif %}
+        </td>
+        <td class="px-4 py-3 text-slate-600">{{ c.category or '—' }}</td>
+        <td class="px-4 py-3 text-slate-700 max-w-xs truncate">{{ c.description[:80] }}</td>
+        <td class="px-4 py-3 text-slate-500 text-xs">{{ (c.location or '')[:30] }}</td>
+        <td class="px-4 py-3"><span class="badge-{{ c.status }}">{{ c.status }}</span></td>
+        <td class="px-4 py-3 text-slate-400 text-xs">{{ c.created_at[:10] }}</td>
+      </tr>
+      {% else %}
+      <tr><td colspan="7" class="px-4 py-8 text-center text-slate-400">No complaints filed yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<!-- New complaint modal -->
+<div id="newModal" class="hidden fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+  <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-lg">
+    <h2 class="text-lg font-bold text-slate-800 mb-4">File a Safety Complaint</h2>
+    <div class="space-y-3">
+      <div>
+        <label class="text-sm font-medium text-slate-600">Description *</label>
+        <textarea id="nc-description" rows="4" placeholder="Describe the safety issue or nuisance..."
+          class="w-full mt-1 border border-slate-200 rounded-lg p-3 text-sm outline-none focus:border-blue-400"></textarea>
+      </div>
+      <div>
+        <label class="text-sm font-medium text-slate-600">Location</label>
+        <input id="nc-location" type="text" placeholder="Street address or landmark"
+          class="w-full mt-1 border border-slate-200 rounded-lg p-3 text-sm outline-none focus:border-blue-400">
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="text-sm font-medium text-slate-600">Your name</label>
+          <input id="nc-name" type="text" placeholder="Optional"
+            class="w-full mt-1 border border-slate-200 rounded-lg p-3 text-sm outline-none focus:border-blue-400">
+        </div>
+        <div>
+          <label class="text-sm font-medium text-slate-600">Contact</label>
+          <input id="nc-contact" type="text" placeholder="Phone or email"
+            class="w-full mt-1 border border-slate-200 rounded-lg p-3 text-sm outline-none focus:border-blue-400">
+        </div>
+      </div>
+      <div id="nc-result" class="hidden rounded-lg p-3 text-sm"></div>
+    </div>
+    <div class="flex gap-3 mt-5">
+      <button onclick="submitComplaint()"
+        class="flex-1 bg-red-600 text-white py-2 rounded-lg text-sm font-medium hover:bg-red-700">
+        Submit Complaint
+      </button>
+      <button onclick="document.getElementById('newModal').classList.add('hidden')"
+        class="flex-1 border border-slate-200 text-slate-600 py-2 rounded-lg text-sm hover:bg-slate-50">
+        Cancel
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Detail modal -->
+<div id="detailModal" class="hidden fixed inset-0 bg-black/40 flex items-center justify-center z-50 overflow-y-auto py-8">
+  <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-2xl mx-4">
+    <div id="detail-content" class="text-sm text-slate-600">Loading…</div>
+    <button onclick="document.getElementById('detailModal').classList.add('hidden')"
+      class="mt-5 w-full border border-slate-200 text-slate-600 py-2 rounded-lg text-sm hover:bg-slate-50">
+      Close
+    </button>
+  </div>
+</div>
+
+<script>
+  async function submitComplaint() {
+    const description = document.getElementById('nc-description').value.trim();
+    if (!description) return alert('Please describe the issue.');
+    const res  = await fetch('/api/complaints', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({
+        description,
+        location:    document.getElementById('nc-location').value,
+        reported_by: document.getElementById('nc-name').value,
+        contact:     document.getElementById('nc-contact').value,
+      })
+    });
+    const data = await res.json();
+    const el = document.getElementById('nc-result');
+    el.classList.remove('hidden');
+    if (data.error) {
+      el.className = 'rounded-lg p-3 text-sm bg-red-50 text-red-700';
+      el.textContent = 'Error: ' + data.error;
+    } else {
+      const sevColors = {emergency:'bg-red-50 text-red-700', high:'bg-orange-50 text-orange-700', medium:'bg-yellow-50 text-yellow-700', low:'bg-green-50 text-green-700'};
+      el.className = 'rounded-lg p-3 text-sm ' + (sevColors[data.severity] || 'bg-slate-50 text-slate-700');
+      el.innerHTML = `<strong>Complaint #${data.complaint_id} received.</strong><br>
+        Severity: ${data.severity.toUpperCase()} · Category: ${data.category}<br>
+        Action: ${data.action} · Deadline: ${data.deadline}<br><br>
+        <em>${data.resident_response || ''}</em>`;
+      setTimeout(() => location.reload(), 4000);
+    }
+  }
+
+  async function viewComplaint(id) {
+    document.getElementById('detailModal').classList.remove('hidden');
+    document.getElementById('detail-content').innerHTML = 'Loading…';
+    const res  = await fetch('/api/complaints/' + id);
+    const data = await res.json();
+    const c = data.complaint, clf = data.classification, r = data.resolution;
+    const sevBadge = clf ? `<span class="badge-${clf.severity}">${clf.severity.toUpperCase()}</span>` : '';
+    let html = `<h2 class="text-lg font-bold text-slate-800 mb-3">Complaint #${c.id}</h2>
+      <div class="flex gap-2 mb-3">${sevBadge}<span class="badge-${c.status}">${c.status}</span></div>
+      <p class="text-slate-700 mb-3">${c.description}</p>
+      <div class="text-xs text-slate-400 mb-4">Filed ${c.created_at.substring(0,16)} · ${c.location || 'No location'} · ${c.reported_by || 'Anonymous'}</div>`;
+    if (clf) {
+      html += `<div class="bg-slate-50 rounded-lg p-3 mb-3">
+        <div class="font-medium text-slate-700 mb-1">Classification</div>
+        <div class="text-xs text-slate-600">${clf.category} · ${clf.routing} · confidence ${Math.round(clf.confidence*100)}%</div>
+        <div class="text-xs text-slate-500 mt-1">${clf.public_risk || ''}</div>
+      </div>`;
+    }
+    if (r) {
+      html += `<div class="bg-green-50 rounded-lg p-3">
+        <div class="font-medium text-green-700 mb-1">Resolved</div>
+        <div class="text-xs text-slate-600">${r.action_taken}</div>
+        ${r.resident_notice ? `<div class="text-xs text-slate-500 mt-1 italic">${r.resident_notice}</div>` : ''}
+      </div>`;
+    }
+    document.getElementById('detail-content').innerHTML = html;
+  }
+</script>
+
+{% endblock %}

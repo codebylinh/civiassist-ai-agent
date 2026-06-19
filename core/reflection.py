@@ -3,8 +3,8 @@ Reflection and consolidation cycles.
 Each cycle uses the LLM to distill episodic memory into higher-level insights.
 """
 from datetime import datetime
-import ollama
 import config
+import core.llm as llm
 from core.memory.episodic import EpisodicMemory
 from core.memory.semantic import SemanticMemory
 from core.memory.consolidation import ConsolidationMemory
@@ -13,13 +13,7 @@ import core.identity as identity
 
 
 def _llm(prompt: str, max_tokens: int = 800) -> str:
-    client = ollama.Client(host=config.OLLAMA_HOST)
-    response = client.chat(
-        model=config.MODEL,
-        messages=[{"role": "user", "content": prompt}],
-        options={"num_predict": max_tokens},
-    )
-    return response.message.content.strip()
+    return llm.complete([{"role": "user", "content": prompt}], max_tokens=max_tokens)
 
 
 def run_daily_reflection(

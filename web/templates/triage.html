@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+{% block title %}Query Triage — civil-agent{% endblock %}
+{% block content %}
+
+<div class="flex items-center justify-between mb-6">
+  <h1 class="text-2xl font-bold text-slate-800">Engineering Query Triage</h1>
+  <button onclick="document.getElementById('newModal').classList.remove('hidden')"
+    class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700">
+    + Submit Query
+  </button>
+</div>
+
+<!-- Stats -->
+<div class="grid grid-cols-4 gap-4 mb-6">
+  {% for label, key in [('Total', 'total'), ('Pending', 'pending'), ('In Progress', 'in_progress'), ('Resolved', 'resolved')] %}
+  <div class="bg-white rounded-xl p-4 shadow-sm border border-slate-200">
+    <div class="text-slate-400 text-xs">{{ label }}</div>
+    <div class="text-2xl font-bold text-slate-800 mt-1">{{ metrics.by_status.get(key, 0) if key != 'total' else metrics.total }}</div>
+  </div>
+  {% endfor %}
+</div>
+
+<!-- Tickets table -->
+<div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+  <table class="w-full text-sm">
+    <thead class="bg-slate-50 border-b border-slate-200">
+      <tr>
+        <th class="px-4 py-3 text-left text-slate-500 font-medium w-12">#</th>
+        <th class="px-4 py-3 text-left text-slate-500 font-medium">Priority</th>
+        <th class="px-4 py-3 text-left text-slate-500 font-medium">Category</th>
+        <th class="px-4 py-3 text-left text-slate-500 font-medium">Subject</th>
+        <th class="px-4 py-3 text-left text-slate-500 font-medium">Routing</th>
+        <th class="px-4 py-3 text-left text-slate-500 font-medium">Status</th>
+        <th class="px-4 py-3 text-left text-slate-500 font-medium">Filed</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-slate-100">
+      {% for t in tickets %}
+      <tr class="hover:bg-slate-50">
+        <td class="px-4 py-3 text-slate-400">{{ t.id }}</td>
+        <td class="px-4 py-3">
+          {% if t.priority %}
+          <span class="badge-{{ t.priority }}">{{ t.priority.upper() }}</span>
+          {% else %}<span class="text-slate-300 text-xs">—</span>{% endif %}
+        </td>
+        <td class="px-4 py-3 text-slate-600 text-xs">{{ (t.category or '').replace('_',' ') or '—' }}</td>
+        <td class="px-4 py-3 text-slate-700 max-w-xs truncate">{{ t.subject }}</td>
+        <td class="px-4 py-3 text-slate-500 text-xs">{{ (t.routing or '').replace('_',' ') or '—' }}</td>
+        <td class="px-4 py-3"><span class="badge-{{ t.status.replace(' ','_') }}">{{ t.status }}</span></td>
+        <td class="px-4 py-3 text-slate-400 text-xs">{{ t.created_at[:10] }}</td>
+      </tr>
+      {% else %}
+      <tr><td colspan="7" class="px-4 py-8 text-center text-slate-400">No queries submitted yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<!-- New query modal -->
+<div id="newModal" class="hidden fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+  <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-lg">
+    <h2 class="text-lg font-bold text-slate-800 mb-4">Submit Engineering Query</h2>
+    <div class="space-y-3">
+      <input id="t-subject" type="text" placeholder="Subject *"
+        class="w-full border border-slate-200 rounded-lg p-3 text-sm outline-none focus:border-blue-400">
+      <textarea id="t-body" rows="5" placeholder="Describe the issue, RFI, or question in detail *"
+        class="w-full border border-slate-200 rounded-lg p-3 text-sm outline-none focus:border-blue-400"></textarea>
+      <div id="t-result" class="hidden rounded-lg p-3 text-sm"></div>
+    </div>
+    <div class="flex gap-3 mt-5">
+      <button onclick="submitQuery()"
+        class="flex-1 bg-blue-600 text-white py-2 rounded-lg text-sm font-medium hover:bg-blue-700">
+        Submit & Triage
+      </button>
+      <button onclick="document.getElementById('newModal').classList.add('hidden')"
+        class="flex-1 border border-slate-200 text-slate-600 py-2 rounded-lg text-sm hover:bg-slate-50">
+        Cancel
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+  async function submitQuery() {
+    const subject = document.getElementById('t-subject').value.trim();
+    const body    = document.getElementById('t-body').value.trim();
+    if (!subject || !body) return alert('Subject and body required.');
+
+    const btn = event.target;
+    btn.textContent = 'Processing…';
+    btn.disabled = true;
+
+    const res  = await fetch('/api/triage', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ subject, body }),
+    });
+    const data = await res.json();
+    btn.textContent = 'Submit & Triage';
+    btn.disabled = false;
+
+    const el = document.getElementById('t-result');
+    el.classList.remove('hidden');
+    if (data.error) {
+      el.className = 'rounded-lg p-3 text-sm bg-red-50 text-red-700';
+      el.textContent = 'Error: ' + data.error;
+    } else {
+      const clf = data.classification;
+      el.className = 'rounded-lg p-3 text-sm bg-blue-50 text-blue-800';
+      el.innerHTML = `<strong>Ticket #${data.ticket_id} created</strong><br>
+        Category: ${clf.category} · Priority: ${clf.priority.toUpperCase()} · Routing: ${clf.routing}<br>
+        Action: ${data.action}<br><br>
+        <em>${(data.draft || '').substring(0, 200)}…</em>`;
+      setTimeout(() => location.reload(), 4000);
+    }
+  }
+</script>
+
+{% endblock %}

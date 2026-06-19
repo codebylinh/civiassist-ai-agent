@@ -2,8 +2,8 @@
 Response drafter — generates empathetic, context-aware reply drafts.
 Uses KB matches when available; falls back to LLM-generated response.
 """
-import ollama
 import config
+import core.llm as llm
 from pipeline import ticket_store as db
 
 _TONE_MAP = {
@@ -70,13 +70,7 @@ Guidance: {guidance}
 
 Write the reply now:"""
 
-    client = ollama.Client(host=config.OLLAMA_HOST)
-    response = client.chat(
-        model=config.MODEL,
-        messages=[
-            {"role": "system", "content": _SYSTEM},
-            {"role": "user",   "content": prompt},
-        ],
-        options={"num_predict": 512, "temperature": 0.7},
+    return llm.complete(
+        [{"role": "system", "content": _SYSTEM}, {"role": "user", "content": prompt}],
+        max_tokens=512, temperature=0.7,
     )
-    return response.message.content.strip()

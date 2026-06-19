@@ -10,8 +10,8 @@ IDENTITY_DIR = BASE_DIR / "identity"
 NOTES_DIR = IDENTITY_DIR / "notes"
 LOG_DIR = BASE_DIR / "systemlog"
 
-OLLAMA_HOST = os.environ.get("OLLAMA_HOST", "http://localhost:11434")
-MODEL = os.environ.get("AGENT_MODEL", "llama3.2")
+GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "")
+MODEL = os.environ.get("AGENT_MODEL", "llama-3.1-8b-instant")
 
 # Directories that the agent can read/write (sandbox boundary)
 SANDBOX_DIRS = [IDENTITY_DIR, NOTES_DIR]

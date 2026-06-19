@@ -5,8 +5,8 @@ the escalation path.
 """
 import json
 import re
-import ollama
 import config
+import core.llm as llm
 from pipeline import community as db
 
 # --- Classifier ---
@@ -71,16 +71,10 @@ Sign off as "Community Safety Coordinator"."""
 
 
 def _llm(system: str, prompt: str, max_tokens: int = 400) -> str:
-    client = ollama.Client(host=config.OLLAMA_HOST)
-    response = client.chat(
-        model=config.MODEL,
-        messages=[
-            {"role": "system", "content": system},
-            {"role": "user",   "content": prompt},
-        ],
-        options={"num_predict": max_tokens, "temperature": 0.2},
+    return llm.complete(
+        [{"role": "system", "content": system}, {"role": "user", "content": prompt}],
+        max_tokens=max_tokens, temperature=0.2,
     )
-    return response.message.content.strip()
 
 
 def _rule_fallback(description: str) -> dict:

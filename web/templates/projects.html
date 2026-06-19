@@ -1,0 +1,171 @@
+{% extends "base.html" %}
+{% block title %}Projects — civil-agent{% endblock %}
+{% block content %}
+
+<div class="flex items-center justify-between mb-6">
+  <h1 class="text-2xl font-bold text-slate-800">Projects & RFIs</h1>
+  <button onclick="document.getElementById('newModal').classList.remove('hidden')"
+    class="bg-slate-800 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-700">
+    + New Project
+  </button>
+</div>
+
+{% if projects %}
+<div class="grid gap-4">
+  {% for p in projects %}
+  <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
+    <div class="flex items-start justify-between">
+      <div>
+        <h2 class="font-semibold text-slate-800">{{ p.name }}</h2>
+        <div class="text-sm text-slate-500 mt-0.5">
+          {{ p.client or 'No client' }}
+          {% if p.location %} · {{ p.location }}{% endif %}
+          {% if p.target_date %} · Target: {{ p.target_date }}{% endif %}
+        </div>
+      </div>
+      <span class="badge-pending text-xs">{{ p.phase.replace('_',' ') }}</span>
+    </div>
+    <div id="summary-{{ p.id }}" class="mt-3 text-sm text-slate-500 hidden whitespace-pre-wrap font-mono bg-slate-50 rounded-lg p-3"></div>
+    <div class="mt-3 flex gap-2">
+      <button onclick="loadSummary({{ p.id }})"
+        class="text-xs border border-slate-200 text-slate-600 px-3 py-1.5 rounded-lg hover:bg-slate-50">
+        View Summary
+      </button>
+      <button onclick="openRFI({{ p.id }}, '{{ p.name }}')"
+        class="text-xs border border-blue-200 text-blue-600 px-3 py-1.5 rounded-lg hover:bg-blue-50">
+        + RFI
+      </button>
+      <button onclick="openIssue({{ p.id }}, '{{ p.name }}')"
+        class="text-xs border border-orange-200 text-orange-600 px-3 py-1.5 rounded-lg hover:bg-orange-50">
+        + Site Issue
+      </button>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="bg-white rounded-xl shadow-sm border border-slate-200 p-12 text-center text-slate-400">
+  No active projects. Create one to start tracking RFIs, submittals, and site issues.
+</div>
+{% endif %}
+
+<!-- New project modal -->
+<div id="newModal" class="hidden fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+  <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-lg">
+    <h2 class="text-lg font-bold text-slate-800 mb-4">New Project</h2>
+    <div class="space-y-3">
+      <input id="p-name"   type="text" placeholder="Project name *" class="w-full border border-slate-200 rounded-lg p-3 text-sm outline-none focus:border-blue-400">
+      <input id="p-client" type="text" placeholder="Client name"    class="w-full border border-slate-200 rounded-lg p-3 text-sm outline-none focus:border-blue-400">
+      <input id="p-loc"    type="text" placeholder="Location"       class="w-full border border-slate-200 rounded-lg p-3 text-sm outline-none focus:border-blue-400">
+      <input id="p-date"   type="date" placeholder="Target date"    class="w-full border border-slate-200 rounded-lg p-3 text-sm outline-none focus:border-blue-400">
+      <textarea id="p-desc" rows="2" placeholder="Description (optional)" class="w-full border border-slate-200 rounded-lg p-3 text-sm outline-none focus:border-blue-400"></textarea>
+    </div>
+    <div class="flex gap-3 mt-5">
+      <button onclick="createProject()" class="flex-1 bg-slate-800 text-white py-2 rounded-lg text-sm font-medium hover:bg-slate-700">Create</button>
+      <button onclick="document.getElementById('newModal').classList.add('hidden')" class="flex-1 border border-slate-200 text-slate-600 py-2 rounded-lg text-sm hover:bg-slate-50">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- RFI modal -->
+<div id="rfiModal" class="hidden fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+  <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-lg">
+    <h2 class="text-lg font-bold text-slate-800 mb-1">New RFI</h2>
+    <p id="rfi-project-name" class="text-slate-500 text-sm mb-4"></p>
+    <input type="hidden" id="rfi-pid">
+    <div class="space-y-3">
+      <input id="rfi-subject"  type="text"     placeholder="Subject *"       class="w-full border border-slate-200 rounded-lg p-3 text-sm outline-none focus:border-blue-400">
+      <textarea id="rfi-question" rows="3"     placeholder="Question *"      class="w-full border border-slate-200 rounded-lg p-3 text-sm outline-none focus:border-blue-400"></textarea>
+      <input id="rfi-by"       type="text"     placeholder="Submitted by"    class="w-full border border-slate-200 rounded-lg p-3 text-sm outline-none focus:border-blue-400">
+      <input id="rfi-discipline" type="text"   placeholder="Discipline (civil / structural / MEP…)" class="w-full border border-slate-200 rounded-lg p-3 text-sm outline-none focus:border-blue-400">
+    </div>
+    <div class="flex gap-3 mt-5">
+      <button onclick="submitRFI()" class="flex-1 bg-blue-600 text-white py-2 rounded-lg text-sm font-medium hover:bg-blue-700">Submit RFI</button>
+      <button onclick="document.getElementById('rfiModal').classList.add('hidden')" class="flex-1 border border-slate-200 text-slate-600 py-2 rounded-lg text-sm hover:bg-slate-50">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Issue modal -->
+<div id="issueModal" class="hidden fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+  <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-lg">
+    <h2 class="text-lg font-bold text-slate-800 mb-1">Log Site Issue</h2>
+    <p id="issue-project-name" class="text-slate-500 text-sm mb-4"></p>
+    <input type="hidden" id="issue-pid">
+    <div class="space-y-3">
+      <textarea id="issue-desc" rows="3" placeholder="Describe the issue *" class="w-full border border-slate-200 rounded-lg p-3 text-sm outline-none focus:border-blue-400"></textarea>
+      <select id="issue-sev" class="w-full border border-slate-200 rounded-lg p-3 text-sm outline-none focus:border-blue-400">
+        <option value="critical">Critical</option>
+        <option value="high">High</option>
+        <option value="medium" selected>Medium</option>
+        <option value="low">Low</option>
+      </select>
+      <input id="issue-loc" type="text" placeholder="Location on site" class="w-full border border-slate-200 rounded-lg p-3 text-sm outline-none focus:border-blue-400">
+      <input id="issue-by"  type="text" placeholder="Reported by"      class="w-full border border-slate-200 rounded-lg p-3 text-sm outline-none focus:border-blue-400">
+    </div>
+    <div class="flex gap-3 mt-5">
+      <button onclick="submitIssue()" class="flex-1 bg-orange-600 text-white py-2 rounded-lg text-sm font-medium hover:bg-orange-700">Log Issue</button>
+      <button onclick="document.getElementById('issueModal').classList.add('hidden')" class="flex-1 border border-slate-200 text-slate-600 py-2 rounded-lg text-sm hover:bg-slate-50">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  async function loadSummary(pid) {
+    const el = document.getElementById('summary-' + pid);
+    el.classList.remove('hidden');
+    el.textContent = 'Loading…';
+    const res  = await fetch('/api/projects/' + pid + '/summary');
+    const data = await res.json();
+    el.textContent = data.summary;
+  }
+  function openRFI(pid, name) {
+    document.getElementById('rfi-pid').value = pid;
+    document.getElementById('rfi-project-name').textContent = name;
+    document.getElementById('rfiModal').classList.remove('hidden');
+  }
+  function openIssue(pid, name) {
+    document.getElementById('issue-pid').value = pid;
+    document.getElementById('issue-project-name').textContent = name;
+    document.getElementById('issueModal').classList.remove('hidden');
+  }
+  async function createProject() {
+    const name = document.getElementById('p-name').value.trim();
+    if (!name) return alert('Project name required.');
+    await fetch('/api/projects', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({
+      name, client: document.getElementById('p-client').value,
+      location: document.getElementById('p-loc').value,
+      target_date: document.getElementById('p-date').value,
+      description: document.getElementById('p-desc').value,
+    })});
+    location.reload();
+  }
+  async function submitRFI() {
+    const pid  = document.getElementById('rfi-pid').value;
+    const subj = document.getElementById('rfi-subject').value.trim();
+    const q    = document.getElementById('rfi-question').value.trim();
+    if (!subj || !q) return alert('Subject and question required.');
+    await fetch('/api/projects/' + pid + '/rfis', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({
+      subject: subj, question: q,
+      submitted_by: document.getElementById('rfi-by').value,
+      discipline:   document.getElementById('rfi-discipline').value || 'civil',
+    })});
+    document.getElementById('rfiModal').classList.add('hidden');
+    alert('RFI submitted.');
+  }
+  async function submitIssue() {
+    const pid  = document.getElementById('issue-pid').value;
+    const desc = document.getElementById('issue-desc').value.trim();
+    if (!desc) return alert('Description required.');
+    await fetch('/api/projects/' + pid + '/issues', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({
+      description: desc,
+      severity:    document.getElementById('issue-sev').value,
+      location:    document.getElementById('issue-loc').value,
+      reported_by: document.getElementById('issue-by').value,
+    })});
+    document.getElementById('issueModal').classList.add('hidden');
+    alert('Site issue logged.');
+  }
+</script>
+
+{% endblock %}

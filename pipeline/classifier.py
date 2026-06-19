@@ -6,8 +6,8 @@ project lifecycle. Falls back to rule-based heuristics on LLM failure.
 """
 import json
 import re
-import ollama
 import config
+import core.llm as llm
 
 CATEGORIES = [
     "rfi",              # Request for Information / technical clarification
@@ -141,18 +141,12 @@ def _validate(data: dict) -> dict:
 
 def classify(subject: str, body: str) -> dict:
     prompt = f"Subject: {subject}\n\nMessage:\n{body[:1500]}"
-    client = ollama.Client(host=config.OLLAMA_HOST)
 
     try:
-        response = client.chat(
-            model=config.MODEL,
-            messages=[
-                {"role": "system", "content": _SYSTEM},
-                {"role": "user",   "content": prompt},
-            ],
-            options={"num_predict": 256, "temperature": 0.1},
+        raw = llm.complete(
+            [{"role": "system", "content": _SYSTEM}, {"role": "user", "content": prompt}],
+            max_tokens=256, temperature=0.1,
         )
-        raw = response.message.content.strip()
         json_match = re.search(r"\{.*\}", raw, re.DOTALL)
         if json_match:
             data = json.loads(json_match.group())
