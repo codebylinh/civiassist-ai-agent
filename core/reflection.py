@@ -3,7 +3,7 @@ Reflection and consolidation cycles.
 Each cycle uses the LLM to distill episodic memory into higher-level insights.
 """
 from datetime import datetime
-import anthropic
+import ollama
 import config
 from core.memory.episodic import EpisodicMemory
 from core.memory.semantic import SemanticMemory
@@ -13,13 +13,13 @@ import core.identity as identity
 
 
 def _llm(prompt: str, max_tokens: int = 800) -> str:
-    client = anthropic.Anthropic(api_key=config.ANTHROPIC_API_KEY)
-    msg = client.messages.create(
+    client = ollama.Client(host=config.OLLAMA_HOST)
+    response = client.chat(
         model=config.MODEL,
-        max_tokens=max_tokens,
         messages=[{"role": "user", "content": prompt}],
+        options={"num_predict": max_tokens},
     )
-    return msg.content[0].text.strip()
+    return response.message.content.strip()
 
 
 def run_daily_reflection(

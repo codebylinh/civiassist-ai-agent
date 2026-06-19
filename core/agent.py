@@ -1,9 +1,9 @@
 """
 Core agent — orchestrates all subsystems into a single conversation loop.
+Uses Ollama (local Meta Llama) as the LLM engine.
 """
 import json
-from datetime import datetime
-import anthropic
+import ollama
 import config
 import core.identity as identity
 from core.inner_state import InnerState
@@ -15,45 +15,40 @@ from core.memory import (
 )
 from core.reflection import (
     run_session_summary, run_red_thread_update, run_daily_reflection,
-    run_weekly_essence, run_anchor_review
+    run_weekly_essence,
 )
 from tools.file_tools import (
     read_note, write_note, list_notes, TOOL_DEFINITIONS
 )
-import tools.file_tools as file_tools
 
 
 class Agent:
     def __init__(self):
         identity.ensure_identity_files()
 
-        self.episodic   = EpisodicMemory()
-        self.semantic   = SemanticMemory()
-        self.self_model = SelfModel()
-        self.personality = PersonalityMemory()
+        self.episodic     = EpisodicMemory()
+        self.semantic     = SemanticMemory()
+        self.self_model   = SelfModel()
+        self.personality  = PersonalityMemory()
         self.user_profile = UserProfile()
-        self.thoughts   = ThoughtsMemory()
-        self.lmcs       = ConsolidationMemory()
+        self.thoughts     = ThoughtsMemory()
+        self.lmcs         = ConsolidationMemory()
 
         self.inner_state = InnerState()
         self.pms         = PriorityMemory()
         self.kernel      = CognitiveKernel(self.inner_state, self.lmcs)
 
-        self.session_id  = self.episodic.new_session()
-        self.client      = anthropic.Anthropic(api_key=config.ANTHROPIC_API_KEY)
+        self.session_id = self.episodic.new_session()
+        self.client     = ollama.Client(host=config.OLLAMA_HOST)
 
         self._run_background_cycles()
 
     def _run_background_cycles(self):
-        """Run any due reflection/consolidation cycles at startup."""
         if self.kernel.should_run_daily_reflection():
             try:
-                run_daily_reflection(
-                    self.episodic, self.semantic, self.lmcs, self.pms
-                )
+                run_daily_reflection(self.episodic, self.semantic, self.lmcs, self.pms)
             except Exception:
                 pass
-
         if self.kernel.should_run_weekly_essence():
             try:
                 run_weekly_essence(self.lmcs, self.pms)
@@ -68,19 +63,11 @@ class Agent:
         )
 
     def _build_messages(self, conversation_history: list[dict]) -> list[dict]:
-        """Inject recent episodic turns before the live conversation."""
         recent = self.episodic.recent_turns(config.EPISODIC_CONTEXT_TURNS)
-
-        # Convert stored turns to message format
-        injected = []
-        for t in recent:
-            injected.append({"role": t["role"], "content": t["content"]})
-
-        # Merge with live history (avoid duplicates)
-        live_contents = {m["content"] for m in conversation_history}
+        injected = [{"role": t["role"], "content": t["content"]} for t in recent]
+        live_contents = {m["content"] for m in conversation_history if isinstance(m.get("content"), str)}
         merged = [m for m in injected if m["content"] not in live_contents]
         merged.extend(conversation_history)
-
         return merged
 
     def _dispatch_tool(self, tool_name: str, tool_input: dict) -> str:
@@ -91,8 +78,7 @@ class Agent:
             return write_note(tool_input["filename"], tool_input["content"])
 
         elif tool_name == "list_notes":
-            notes = list_notes()
-            return json.dumps(notes)
+            return json.dumps(list_notes())
 
         elif tool_name == "write_journal":
             identity.append_journal(tool_input["entry"])
@@ -142,75 +128,68 @@ class Agent:
         return f"[Unknown tool: {tool_name}]"
 
     def chat(self, user_message: str, conversation_history: list[dict]) -> tuple[str, list[dict]]:
-        """
-        Process one user turn.
-        Returns (assistant_response, updated_conversation_history).
-        """
+        """Process one user turn. Returns (response_text, updated_history)."""
         self.kernel.on_user_message(user_message)
 
-        # Search semantic memory for relevant context
+        # Inject relevant memories into user message
         relevant = self.semantic.search(user_message, limit=5)
-        context_injection = ""
-        if relevant:
-            context_injection = "\n\n[Relevant memories]\n" + "\n".join(
-                f"• {m['content']}" for m in relevant
-            )
-
-        # Add user turn
-        history = list(conversation_history)
         user_content = user_message
-        if context_injection:
-            user_content = user_message + context_injection
-        history.append({"role": "user", "content": user_content})
+        if relevant:
+            mem_block = "\n".join(f"• {m['content']}" for m in relevant)
+            user_content = f"{user_message}\n\n[Relevant memories]\n{mem_block}"
 
-        # Store in episodic memory
+        history = list(conversation_history)
+        history.append({"role": "user", "content": user_content})
         self.episodic.add_turn(self.session_id, "user", user_message)
 
         system_prompt = self._build_system_prompt()
         messages = self._build_messages(history)
 
-        # Agentic loop (handles tool use)
+        # Prepend system message for Ollama (first message with role=system)
+        full_messages = [{"role": "system", "content": system_prompt}] + messages
+
         final_response = ""
-        while True:
-            response = self.client.messages.create(
+        max_tool_rounds = 5
+
+        for _ in range(max_tool_rounds):
+            response = self.client.chat(
                 model=config.MODEL,
-                max_tokens=2048,
-                system=system_prompt,
+                messages=full_messages,
                 tools=TOOL_DEFINITIONS,
-                messages=messages,
+                options={"num_predict": 2048},
             )
 
-            # Collect text blocks
-            text_blocks = [b.text for b in response.content if b.type == "text"]
-            tool_uses = [b for b in response.content if b.type == "tool_use"]
+            msg = response.message
+            text = msg.content or ""
+            tool_calls = msg.tool_calls or []
 
-            if text_blocks:
-                final_response = "\n".join(text_blocks)
+            if text:
+                final_response = text
 
-            if response.stop_reason == "end_turn" or not tool_uses:
+            if not tool_calls:
                 break
 
-            # Execute tools and feed results back
-            messages.append({"role": "assistant", "content": response.content})
-            tool_results = []
-            for tu in tool_uses:
-                result = self._dispatch_tool(tu.name, tu.input)
-                tool_results.append({
-                    "type": "tool_result",
-                    "tool_use_id": tu.id,
-                    "content": result
-                })
-            messages.append({"role": "user", "content": tool_results})
+            # Add the assistant turn (with tool_calls) to message history
+            assistant_entry: dict = {"role": "assistant", "content": text}
+            if tool_calls:
+                assistant_entry["tool_calls"] = [
+                    {"function": {"name": tc.function.name, "arguments": tc.function.arguments}}
+                    for tc in tool_calls
+                ]
+            full_messages.append(assistant_entry)
+
+            # Execute each tool and append results
+            for tc in tool_calls:
+                result = self._dispatch_tool(tc.function.name, dict(tc.function.arguments))
+                full_messages.append({"role": "tool", "content": result})
 
         # Post-response updates
         self.kernel.on_agent_response(final_response)
         self.episodic.add_turn(self.session_id, "assistant", final_response)
         self.inner_state.save()
 
-        # Add clean assistant turn to history
         history.append({"role": "assistant", "content": final_response})
 
-        # Red thread update every N turns
         if self.kernel.should_update_red_thread():
             try:
                 run_red_thread_update(
@@ -223,7 +202,6 @@ class Agent:
         return final_response, history
 
     def end_session(self):
-        """Summarize and close the current session."""
         turns = self.episodic.recent_turns(50)
         try:
             run_session_summary(

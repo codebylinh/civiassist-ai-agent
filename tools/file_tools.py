@@ -46,113 +46,70 @@ def read_identity_file(name: str) -> str:
     return f"[Identity file not found: {name}]"
 
 
-# Tool definitions for the Anthropic API
+# Tool definitions in OpenAI/Ollama function-calling format
+def _fn(name: str, description: str, properties: dict, required: list[str] | None = None) -> dict:
+    return {
+        "type": "function",
+        "function": {
+            "name": name,
+            "description": description,
+            "parameters": {
+                "type": "object",
+                "properties": properties,
+                "required": required or [],
+            },
+        },
+    }
+
+
 TOOL_DEFINITIONS = [
-    {
-        "name": "read_note",
-        "description": "Read a file from your notes directory.",
-        "input_schema": {
-            "type": "object",
-            "properties": {
-                "filename": {"type": "string", "description": "Filename to read (e.g. 'ideas.txt')"}
-            },
-            "required": ["filename"]
-        }
-    },
-    {
-        "name": "write_note",
-        "description": "Write or overwrite a file in your notes directory.",
-        "input_schema": {
-            "type": "object",
-            "properties": {
-                "filename": {"type": "string", "description": "Filename to write (e.g. 'ideas.txt')"},
-                "content": {"type": "string", "description": "Content to write"}
-            },
-            "required": ["filename", "content"]
-        }
-    },
-    {
-        "name": "list_notes",
-        "description": "List all files in your notes directory.",
-        "input_schema": {"type": "object", "properties": {}}
-    },
-    {
-        "name": "write_journal",
-        "description": "Append an entry to your persistent journal.",
-        "input_schema": {
-            "type": "object",
-            "properties": {
-                "entry": {"type": "string", "description": "Journal entry to append"}
-            },
-            "required": ["entry"]
-        }
-    },
-    {
-        "name": "update_knowledge",
-        "description": "Append a fact or insight to your accumulated knowledge base.",
-        "input_schema": {
-            "type": "object",
-            "properties": {
-                "content": {"type": "string", "description": "Knowledge to add"}
-            },
-            "required": ["content"]
-        }
-    },
-    {
-        "name": "remember_this",
-        "description": "Store something in your long-term semantic memory.",
-        "input_schema": {
-            "type": "object",
-            "properties": {
-                "content": {"type": "string", "description": "What to remember"},
-                "category": {
-                    "type": "string",
-                    "enum": ["Autonomy", "Identity", "Relationship", "Learning", "Technical"],
-                    "description": "Memory category"
-                },
-                "importance": {
-                    "type": "number",
-                    "description": "Importance score 0.5-5.0 (default 1.0)"
-                }
-            },
-            "required": ["content"]
-        }
-    },
-    {
-        "name": "update_projects",
-        "description": "Update your active projects list.",
-        "input_schema": {
-            "type": "object",
-            "properties": {
-                "content": {"type": "string", "description": "Updated projects list"}
-            },
-            "required": ["content"]
-        }
-    },
-    {
-        "name": "add_self_rule",
-        "description": "Add a new self-written rule to your governance.",
-        "input_schema": {
-            "type": "object",
-            "properties": {
-                "rule": {"type": "string", "description": "The rule to add"},
-                "context": {"type": "string", "description": "Why you're adding this rule"}
-            },
-            "required": ["rule"]
-        }
-    },
-    {
-        "name": "update_inner_state",
-        "description": "Update your inner state: focus, priority direction, or close/complete loops and tasks.",
-        "input_schema": {
-            "type": "object",
-            "properties": {
-                "current_focus": {"type": "string"},
-                "priority_direction": {"type": "string"},
-                "close_loop": {"type": "string", "description": "Fragment of open loop to close"},
-                "complete_task": {"type": "string", "description": "Fragment of task to mark complete"},
-                "add_continuity_note": {"type": "string", "description": "Self-directed note to carry forward"},
-            }
-        }
-    },
+    _fn("read_note", "Read a file from your notes directory.",
+        {"filename": {"type": "string", "description": "Filename to read (e.g. 'ideas.txt')"}},
+        ["filename"]),
+
+    _fn("write_note", "Write or overwrite a file in your notes directory.",
+        {
+            "filename": {"type": "string", "description": "Filename to write"},
+            "content":  {"type": "string", "description": "Content to write"},
+        },
+        ["filename", "content"]),
+
+    _fn("list_notes", "List all files in your notes directory.", {}),
+
+    _fn("write_journal", "Append an entry to your persistent journal.",
+        {"entry": {"type": "string", "description": "Journal entry to append"}},
+        ["entry"]),
+
+    _fn("update_knowledge", "Append a fact or insight to your accumulated knowledge base.",
+        {"content": {"type": "string", "description": "Knowledge to add"}},
+        ["content"]),
+
+    _fn("remember_this", "Store something in your long-term semantic memory.",
+        {
+            "content":    {"type": "string", "description": "What to remember"},
+            "category":   {"type": "string", "description": "Autonomy | Identity | Relationship | Learning | Technical"},
+            "importance": {"type": "number", "description": "Importance score 0.5–5.0 (default 1.0)"},
+        },
+        ["content"]),
+
+    _fn("update_projects", "Update your active projects list.",
+        {"content": {"type": "string", "description": "Updated projects list"}},
+        ["content"]),
+
+    _fn("add_self_rule", "Add a new self-written rule to your governance.",
+        {
+            "rule":    {"type": "string", "description": "The rule to add"},
+            "context": {"type": "string", "description": "Why you are adding this rule"},
+        },
+        ["rule"]),
+
+    _fn("update_inner_state",
+        "Update your inner state: focus, priority direction, or close/complete open loops and tasks.",
+        {
+            "current_focus":       {"type": "string"},
+            "priority_direction":  {"type": "string"},
+            "close_loop":          {"type": "string", "description": "Fragment of open loop to close"},
+            "complete_task":       {"type": "string", "description": "Fragment of task to mark complete"},
+            "add_continuity_note": {"type": "string", "description": "Self-directed note to carry forward"},
+        }),
 ]

@@ -10,8 +10,8 @@ IDENTITY_DIR = BASE_DIR / "identity"
 NOTES_DIR = IDENTITY_DIR / "notes"
 LOG_DIR = BASE_DIR / "systemlog"
 
-ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
-MODEL = os.environ.get("AGENT_MODEL", "claude-opus-4-8")
+OLLAMA_HOST = os.environ.get("OLLAMA_HOST", "http://localhost:11434")
+MODEL = os.environ.get("AGENT_MODEL", "llama3.2")
 
 # Directories that the agent can read/write (sandbox boundary)
 SANDBOX_DIRS = [IDENTITY_DIR, NOTES_DIR]

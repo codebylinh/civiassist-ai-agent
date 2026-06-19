@@ -17,10 +17,19 @@ import config
 console = Console()
 
 
-def _check_api_key():
-    if not config.ANTHROPIC_API_KEY:
-        console.print("[red]Error:[/red] ANTHROPIC_API_KEY is not set.")
-        console.print("Add it to a .env file:  ANTHROPIC_API_KEY=sk-ant-...")
+def _check_ollama():
+    import ollama
+    try:
+        client = ollama.Client(host=config.OLLAMA_HOST)
+        models = [m.model for m in client.list().models]
+        if not any(config.MODEL in m for m in models):
+            console.print(f"[yellow]Model '{config.MODEL}' not found. Pulling it now...[/yellow]")
+            console.print(f"  [dim]ollama pull {config.MODEL}[/dim]")
+            client.pull(config.MODEL)
+    except Exception as e:
+        console.print(f"[red]Cannot reach Ollama at {config.OLLAMA_HOST}[/red]")
+        console.print("Make sure Ollama is running:  [bold]ollama serve[/bold]")
+        console.print(f"Error: {e}")
         sys.exit(1)
 
 
@@ -29,7 +38,7 @@ def _print_welcome(agent):
     console.print(Panel.fit(
         "[bold cyan]Architecture Agent[/bold cyan]\n"
         "Autonomous AI with persistent memory and identity continuity\n\n"
-        f"Model: [yellow]{config.MODEL}[/yellow]  |  "
+        f"Model: [yellow]{config.MODEL} (Ollama)[/yellow]  |  "
         f"Priority memories: [yellow]{agent.pms.total_count()}[/yellow]  |  "
         f"Total turns: [yellow]{agent.inner_state.total_turns}[/yellow]\n\n"
         "Type [bold]/help[/bold] for commands  |  [bold]/quit[/bold] to exit",
@@ -111,7 +120,7 @@ def _handle_command(cmd: str, agent) -> bool:
 
 
 def main():
-    _check_api_key()
+    _check_ollama()
 
     console.print("[dim]Initializing agent...[/dim]")
     from core.agent import Agent
