@@ -216,41 +216,65 @@ def cmd_metrics():
 
 
 def cmd_seed():
-    """Load demo tickets and knowledge base entries."""
-    console.print("[cyan]Seeding demo data...[/cyan]")
+    """Load construction/civil engineering demo tickets and knowledge base entries."""
+    console.print("[cyan]Seeding construction domain demo data...[/cyan]")
 
-    # KB entries
+    # Knowledge base entries
     kb_entries = [
-        ("billing",   "How do I cancel my subscription?",
-         "Go to Account Settings → Billing → Cancel Subscription. Cancellation takes effect at the end of your billing period."),
-        ("billing",   "I was charged twice",
-         "Double charges are typically resolved within 3–5 business days. Please share your transaction ID and we will investigate immediately."),
-        ("technical", "I cannot log in",
-         "Try resetting your password via the 'Forgot Password' link. If the issue persists, clear browser cache and try incognito mode."),
-        ("technical", "API returning 500 errors",
-         "Check our status page for ongoing incidents. If none, share your request payload and we will escalate to engineering."),
-        ("account",   "How do I change my email address",
-         "Go to Account Settings → Profile → Email. You will receive a verification email at the new address."),
+        ("rfi",
+         "Rebar spacing conflict between structural drawings and architectural",
+         "Issue an RFI to the structural engineer of record immediately. Do not place concrete until the conflict is resolved and a written response is received. Document the RFI with drawing revision numbers and conflicting details."),
+        ("site_issue",
+         "Unexpected rock encountered during excavation",
+         "Stop excavation in the affected area. Notify the geotechnical engineer and project manager within 24 hours. Document with photos and survey coordinates. A change order will likely be required — do not proceed without owner authorization on scope and cost."),
+        ("safety",
+         "Worker fell into unprotected excavation",
+         "STOP all work in the area immediately. Call emergency services if injury occurred. Notify OSHA (within 8 hours for hospitalization). Preserve the scene. Contact the project safety officer and legal team. Do not resume work until a safety review is completed and corrective measures are in place."),
+        ("permit_approval",
+         "Building permit application timeline",
+         "Typical permit timelines: residential 2–6 weeks, commercial 6–16 weeks, infrastructure varies by jurisdiction. Submit complete, coordinated documents to avoid re-review cycles. Pre-application meetings with the AHJ (Authority Having Jurisdiction) can reduce review time significantly."),
+        ("budget_cost",
+         "What triggers a change order",
+         "Change orders are required for any change to contract scope, schedule, or price. Common triggers: owner-directed changes, unforeseen site conditions (differing site conditions clause), design errors/omissions, code changes post-contract. Always get a signed CO before proceeding with changed work."),
+        ("design_review",
+         "Minimum concrete cover requirements",
+         "Per ACI 318: footings cast against earth = 3 inches; slabs on grade = 1.5 inches; beams/columns exposed to weather = 2 inches; walls exposed to weather = 1.5 inches (≤#5 bar) or 2 inches (≥#6). Verify with project specifications which may require greater cover."),
+        ("schedule",
+         "Critical path method for construction scheduling",
+         "The critical path is the longest sequence of dependent activities determining project duration. Float (slack) = zero on critical path activities. Delays on the critical path directly delay project completion. Use CPM software (Primavera P6, MS Project) to identify and monitor critical path activities weekly."),
+        ("zoning_planning",
+         "How to apply for a zoning variance",
+         "A variance permits deviation from zoning standards when strict application causes undue hardship. Process: pre-application meeting → formal application with site plan → staff report → public hearing (notice required 10–21 days prior) → board decision → appeal period. Hardship must be demonstrated; self-created hardship is generally not grounds for a variance."),
+        ("submittal",
+         "Submittal review stamps and what they mean",
+         "Approved: fabricate/install as submitted. Approved as Noted: fabricate/install per reviewer's markups. Revise and Resubmit: corrections required before proceeding — resubmit for review. Rejected: does not meet contract requirements — resubmit with compliant product. Fabrication before approval is at contractor's risk."),
+        ("client_inquiry",
+         "Client asking for project status update",
+         "Provide a brief update covering: (1) current phase and % complete, (2) schedule status vs. baseline, (3) any active issues affecting budget or timeline, (4) next milestone and target date. Use plain language — avoid acronyms. Always end with the next action item and who is responsible."),
     ]
     for cat, issue, resolution in kb_entries:
         db.add_kb_entry(cat, issue, resolution)
 
     # Demo tickets
     demo_tickets = [
-        ("Cannot access my account after password reset",
-         "Hi, I reset my password yesterday but now I cannot log in at all. I keep getting 'Invalid credentials' even though I'm using the new password. I've tried 3 browsers. This is urgent as I have a presentation today."),
-        ("Charged twice for the same month",
-         "I noticed two charges of $49.99 on my credit card statement for the same billing period (March 2024). Please refund the duplicate charge immediately. My account email is user@example.com."),
-        ("Feature request: dark mode",
-         "Hi team! Would love to see a dark mode option in the dashboard. My eyes get tired looking at the bright interface for long work sessions. Keep up the great work!"),
-        ("Your service is absolutely terrible - URGENT",
-         "This is completely unacceptable. Your API has been down for 3 hours and I'm losing revenue every minute. I've sent 5 emails with no response. If this isn't fixed in the next hour I'm canceling and leaving a public review."),
-        ("How do I export my data?",
-         "Hello, I would like to export all my historical data as a CSV. Is there a way to do this from the dashboard? Thanks"),
+        ("RFI: Footing depth conflict between geotech report and structural drawings",
+         "The geotech report recommends minimum footing depth of 4'-0\" below grade due to expansive clay. However, the structural drawings show 3'-0\" depth for interior spread footings. Which takes precedence? We are scheduled to start footing excavation Monday and cannot proceed without clarification. Project: Northgate Community Center."),
+
+        ("URGENT: Worker injury on site — excavation collapse",
+         "A section of the trench wall collapsed at the Main Street water main project this morning (approx. 9:15 AM). One worker was partially buried. Emergency services responded and the worker was taken to hospital. OSHA has been notified. The site is shut down. We need immediate guidance on next steps and documentation requirements."),
+
+        ("Change order dispute — rock excavation at Riverside Road",
+         "The contractor is claiming $85,000 for rock excavation encountered at 6ft depth, which they say qualifies as a differing site condition. The original geotech report indicated rock at 10–12ft. We have reviewed the boring logs and believe the contractor had sufficient information. Can you advise on how to evaluate this claim?"),
+
+        ("Client inquiry: When will the Maple Avenue bridge be open to traffic?",
+         "Hi, I'm a resident near the Maple Avenue bridge construction. The project has been going on for 8 months now. The original completion date shown on the sign was October 15th and it's now November. Nobody seems to be able to give us a straight answer. When will it open? Who can I contact?"),
+
+        ("Stormwater permit question: Does our site need a SWPPP?",
+         "We're breaking ground on a 3.5-acre commercial development next month. Our contractor is asking whether we need a Stormwater Pollution Prevention Plan. We are disturbing about 2.8 acres. The site drains to a creek that is a tributary of a state-designated water quality impaired water body."),
     ]
     for subject, body in demo_tickets:
         tid = db.create_ticket(subject, body, source="demo")
-        console.print(f"  Created ticket #{tid}: {subject[:50]}")
+        console.print(f"  Created ticket #{tid}: {subject[:60]}")
 
     console.print(f"\n[green]Seeded {len(kb_entries)} KB entries and {len(demo_tickets)} tickets.[/green]")
     console.print("Run [bold]python run_triage.py process-all[/bold] to triage them.")

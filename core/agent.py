@@ -20,6 +20,13 @@ from core.reflection import (
 from tools.file_tools import (
     read_note, write_note, list_notes, TOOL_DEFINITIONS
 )
+from tools.construction_tools import (
+    CONSTRUCTION_TOOL_DEFINITIONS, dispatch_construction_tool
+)
+import pipeline.projects as proj
+
+ALL_TOOLS = TOOL_DEFINITIONS + CONSTRUCTION_TOOL_DEFINITIONS
+_CONSTRUCTION_TOOL_NAMES = {t["function"]["name"] for t in CONSTRUCTION_TOOL_DEFINITIONS}
 
 
 class Agent:
@@ -40,6 +47,7 @@ class Agent:
 
         self.session_id = self.episodic.new_session()
         self.client     = ollama.Client(host=config.OLLAMA_HOST)
+        proj.init_db()
 
         self._run_background_cycles()
 
@@ -125,6 +133,9 @@ class Agent:
             self.inner_state.save()
             return "[Inner state updated]"
 
+        if tool_name in _CONSTRUCTION_TOOL_NAMES:
+            return dispatch_construction_tool(tool_name, tool_input)
+
         return f"[Unknown tool: {tool_name}]"
 
     def chat(self, user_message: str, conversation_history: list[dict]) -> tuple[str, list[dict]]:
@@ -155,7 +166,7 @@ class Agent:
             response = self.client.chat(
                 model=config.MODEL,
                 messages=full_messages,
-                tools=TOOL_DEFINITIONS,
+                tools=ALL_TOOLS,
                 options={"num_predict": 2048},
             )
 

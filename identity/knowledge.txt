@@ -1,0 +1,42 @@
+## Construction Project Phases
+Typical phases: Pre-Design → Schematic Design → Design Development → Construction Documents → Permitting → Bidding/Procurement → Construction (Mobilization → Foundations → Structure → MEP Rough-in → Envelope → Finishes → Commissioning) → Closeout → Warranty Period.
+
+## RFI (Request for Information)
+An RFI is a formal written request from contractor to design team for clarification on drawings or specs. Standard response time is 7–14 calendar days. RFIs that affect schedule or cost trigger a potential change order (PCO). All RFIs must be logged, numbered, and tracked to closure.
+
+## Change Orders
+A Change Order (CO) modifies the contract scope, schedule, or price. Flow: issue identified → PCO issued by contractor → design team reviews → owner approves → CO executed. No work on changed scope should proceed without an executed CO.
+
+## Submittals
+Submittals are documents (shop drawings, product data, samples) submitted by the contractor for design team review. Review stamps: Approved / Approved as Noted / Revise and Resubmit / Rejected. Fabrication should not begin until submittal is approved.
+
+## Site Safety (OSHA)
+Key OSHA construction standards: 29 CFR 1926. Critical areas: fall protection (>6 ft), excavation safety (shoring/sloping for >5 ft), scaffold safety, electrical hazard, confined space. Any safety incident must be reported and documented immediately.
+
+## Geotechnical / Soils
+Bearing capacity, settlement, liquefaction risk, and groundwater depth drive foundation design. Always verify geotech report before finalizing foundation type. Soil classifications per USCS (Unified Soil Classification System). Expansive soils (high plasticity clays) require special slab and foundation design.
+
+## Drainage and Stormwater
+Stormwater management must comply with local MS4 permit requirements. Key metrics: peak flow rate (Q = CiA), detention/retention pond sizing, water quality treatment (first flush). Post-development runoff should not exceed pre-development rates.
+
+## Urban Planning — Zoning
+Zoning ordinances govern: use (residential/commercial/industrial/mixed), density (FAR, lot coverage, units/acre), height limits, setbacks (front/rear/side), parking minimums, and design standards. Variances and conditional use permits require public hearing. Non-conforming uses are typically grandfathered but cannot be expanded.
+
+## Environmental Review
+In the US, federal projects require NEPA review (Categorical Exclusion / EA / EIS). State equivalents (e.g., CEQA in California). Key impact areas: air quality, noise, traffic, biological resources, cultural resources, hazardous materials.
+
+## Concrete (ACI 318)
+Common mix designs: 3,000 psi (residential slabs), 4,000 psi (structural), 5,000 psi+ (high-strength). Cure time: 28 days to design strength; 70% strength at 7 days. Reinforcement cover: 3" for footings, 1.5" for slabs on grade, 2" for beams/columns exposed to weather.
+
+## Steel (AISC)
+Common sections: W-shapes (wide flange) for beams/columns, HSS for columns/bracing, angles for connections. ASTM A992 is standard for W-shapes. Connections: bolted (A325/A490) or welded (E70XX electrode typical). Galvanization or paint system required for exposed/exterior steel.
+
+## Roads and Pavement
+Flexible pavement (asphalt) design per AASHTO 93 method or MEPDG. Key layers: subgrade → subbase → base → surface. Rigid pavement (concrete) for heavy truck routes. Minimum lane width: 12 ft (arterial), 10 ft (local). Cul-de-sac radius: 50 ft minimum.
+
+## Client Communication Best Practices
+- Always give a timeline with any status update
+- Convert technical issues to impact on budget, schedule, and risk — clients track these three things
+- Never use acronyms without spelling them out first for clients
+- If a problem is found, always lead with the solution, not just the problem
+- Document all verbal decisions in writing within 24 hours

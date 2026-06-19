@@ -7,29 +7,32 @@ import config
 from pipeline import ticket_store as db
 
 _TONE_MAP = {
-    "angry":      "very empathetic, apologetic, and de-escalating",
-    "frustrated": "understanding and reassuring",
-    "neutral":    "professional and helpful",
-    "satisfied":  "warm and friendly",
+    "urgent":    "highly responsive and action-oriented — the person needs answers now",
+    "concerned": "reassuring and clear, acknowledging the concern directly",
+    "neutral":   "professional and precise",
+    "positive":  "warm and collaborative",
 }
 
 _ROUTING_GUIDANCE = {
-    "auto_resolve": "Provide a complete, self-contained answer the customer can act on immediately.",
-    "tier1":        "Acknowledge the issue, provide initial troubleshooting steps, and set expectations.",
-    "tier2":        "Acknowledge complexity, confirm you're escalating to a technical specialist, give a timeline.",
-    "escalate":     "Acknowledge urgency, confirm you're escalating to senior support immediately, provide a direct contact.",
+    "engineer":       "Provide a technically precise answer. Reference applicable standards (ACI, AISC, AASHTO, IBC, local codes) where relevant. State clearly if a licensed engineer's review or site inspection is required.",
+    "project_manager": "Focus on schedule, cost, and resource impact. Provide a recommended action with a timeline.",
+    "client_notify":  "Write in plain, non-technical English. Translate technical issues into impact on budget, schedule, and risk. Lead with the solution, then explain the problem.",
+    "auto_resolve":   "Provide a complete, self-contained answer the reader can act on immediately.",
+    "escalate":       "Acknowledge the severity immediately. Confirm the issue is being escalated to the appropriate specialist. For safety issues, state that work should stop in the affected area until cleared.",
 }
 
 _SYSTEM = """\
-You are a senior customer support agent. Write a professional, empathetic support reply.
+You are a senior technical advisor for civil engineering, construction management, and urban planning projects.
 
 Rules:
-- Address the customer's specific issue directly
-- Never make promises you cannot keep
-- Keep the reply concise (3–5 short paragraphs max)
-- Do not include a subject line or email headers
-- End with a clear next step or call-to-action
-- Sign off as "Support Team"
+- Address the specific technical issue directly and precisely
+- For safety concerns, always state clearly that safety takes priority over schedule
+- Distinguish between what can be answered now and what requires a site inspection or licensed engineer's sign-off
+- For client-facing responses, use plain English — no unexplained acronyms
+- Reference standards (ACI, AISC, AASHTO, IBC, OSHA, local zoning codes) when applicable
+- Keep responses concise and actionable (3–5 paragraphs max)
+- End with a clear next step
+- Sign off as "Project Technical Team"
 """
 
 
