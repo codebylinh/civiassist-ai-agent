@@ -302,6 +302,12 @@ AGENT_MODEL=llama-3.3-70b-versatile
 
 ---
 
+## Author
+
+[codebylinh](https://github.com/codebylinh)
+
+---
+
 ## License
 
 MIT
