@@ -177,10 +177,35 @@ uvicorn web.app:app --reload
 
 ## Deploy to Railway (free)
 
-1. Push this repo to GitHub
-2. Go to [railway.app](https://railway.app), create a new project from your GitHub repo
-3. Add one environment variable: `GROQ_API_KEY=gsk_...`
-4. Railway builds and deploys automatically; you get a public URL
+### 1. Get a Groq API key
+
+Sign up at [console.groq.com](https://console.groq.com), go to **API Keys**, and create a key. It's free.
+
+### 2. Create a Railway account
+
+Go to [railway.app](https://railway.app) and sign up with your GitHub account.
+
+### 3. Create a new project
+
+- Click **New Project**
+- Select **Deploy from GitHub repo**
+- Choose `construction-agent`
+
+### 4. Add your API key
+
+- Click your service in the Railway dashboard
+- Go to the **Variables** tab
+- Add: `GROQ_API_KEY` = `gsk_your_key_here`
+
+### 5. Deploy
+
+Railway reads `railway.toml` and `Procfile` automatically. It builds and gives you a public URL:
+
+```
+https://construction-agent-production.up.railway.app
+```
+
+No server setup, no Docker, no extra config. The free tier ($5/month credit) is enough for a hobby or small team project.
 
 ---
 
